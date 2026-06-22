@@ -5,6 +5,9 @@
 #   model_id: provider/model-name (e.g. anthropic/claude-sonnet-4-6)
 #   display_name: Human-readable name shown in the UI
 #   context_window: Max context window in tokens (optional)
+#   tier: Cost/access class — economy | standard | full (optional).
+#         Drives AI credit billing (economy = lite, 2 credits; standard/full =
+#         10) and plan gating. Omit only for models whose cost is unknown.
 
 models:
   # Anthropic (Direct API)
@@ -12,49 +15,66 @@ models:
     display_name: Claude Opus 4.7
     context_window: 1000000
     supports_temperature: false
+    tier: full
 
   - model_id: anthropic/claude-sonnet-4-6
     display_name: Claude Sonnet 4.6
     context_window: 1000000
+    tier: standard
 
   - model_id: anthropic/claude-haiku-4-5
     display_name: Claude Haiku 4.5
     context_window: 200000
+    tier: economy
 
   # Anthropic (AWS Bedrock)
   - model_id: bedrock/anthropic.claude-opus-4-7-v1
     display_name: Claude Opus 4.7 (Bedrock)
     context_window: 1000000
     supports_temperature: false
+    tier: full
 
   - model_id: bedrock/anthropic.claude-sonnet-4-6
     display_name: Claude Sonnet 4.6 (Bedrock)
     context_window: 1000000
+    tier: standard
 
   - model_id: bedrock/anthropic.claude-haiku-4-5-20251001-v1:0
     display_name: Claude Haiku 4.5 (Bedrock)
     context_window: 200000
+    tier: economy
 
   # Google Gemini
   - model_id: gemini/gemini-3.1-pro-preview
     display_name: Gemini 3.1 Pro Preview
     context_window: 1048576
+    tier: standard
 
   - model_id: gemini/gemini-3.1-flash-lite
     display_name: Gemini 3.1 Flash Lite
     context_window: 1048576
+    tier: economy
 
   - model_id: gemini/gemini-3.5-flash
     display_name: Gemini 3.5 Flash
     context_window: 1048576
+    tier: economy
 
   # OpenAI
   - model_id: openai/gpt-5.4
     display_name: GPT-5.4
     context_window: 1050000
     supports_temperature: false
+    tier: full
 
   - model_id: openai/gpt-5-mini-2025-08-07
     display_name: GPT-5 Mini
     context_window: 400000
     supports_temperature: false
+    tier: standard
+
+  # Cloudflare Workers AI
+  - model_id: workers-ai/@cf/zai-org/glm-5.2
+    display_name: GLM-5.2 (Cloudflare)
+    context_window: 200000
+    tier: economy
