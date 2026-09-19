@@ -84,7 +84,7 @@ models:
     tier: economy
 
   # Cloudflare Workers AI
-  - model_id: workers-ai/@cf/zai-org/glm-5.2
-    display_name: GLM-5.2 (Cloudflare)
+  - model_id: workers-ai/@cf/zai-org/glm-5.3
+    display_name: GLM-5.3 (Cloudflare)
     context_window: 200000
     tier: economy
