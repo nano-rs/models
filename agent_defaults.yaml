@@ -70,8 +70,9 @@ providers:
       max_tokens: 16384
       temperature: 0.3
 
-  # Cloudflare Workers AI (GLM-5.2) — low-cost default for open-tier deploys.
-  # Single model across all tiers; capable/fast/mid fall back to _default.
+  # Cloudflare Workers AI (GLM-5.3) — low-cost default for open-tier deploys.
+  # capable/mid fall back to _default; fast (query, summarize, tuning, ...) uses
+  # GLM-5.3 Flash — query building is latency-sensitive.
   workers-ai:
     _default:
       model_id: workers-ai/@cf/zai-org/glm-5.3
@@ -82,7 +83,7 @@ providers:
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: workers-ai/@cf/zai-org/glm-5.3
+      model_id: workers-ai/@cf/zai-org/glm-5.3-flash
       max_tokens: 16384
       temperature: 0.3
 
