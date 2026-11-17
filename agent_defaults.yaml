@@ -6,8 +6,8 @@
 # Agents not listed inherit from the "_default" key for that provider.
 #
 # Agent tiers:
-#   capable: complex reasoning, large context (query, detection, shadow, notebook, enrichment)
-#   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe)
+#   capable: complex reasoning, large context (query, detection, shadow, notebook, enrichment, hunt_investigator, hunt_reviewer)
+#   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe, hunt_recheck)
 #   mid:     moderate complexity (dashboard, timeline, parser_edit, shadow_narrative)
 #
 # Note: max_tokens are intentionally high — SIEM agents work with large log payloads,
@@ -102,6 +102,12 @@ agents:
   investigation: capable
   shadow_hunting: capable
   shadow_narrative: mid
+  # Hunts v2 (NAN-5543): recheck asks only whether a known actor's trip
+  # conditions fired (cheap); the investigator classifies findings; the
+  # reviewer re-queries independently and is the only role that escalates.
+  hunt_recheck: fast
+  hunt_investigator: capable
+  hunt_reviewer: capable
   closure_summary: fast
   tuning_auto: fast
   tuning_hint: fast
