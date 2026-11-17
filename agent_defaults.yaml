@@ -6,8 +6,8 @@
 # Agents not listed inherit from the "_default" key for that provider.
 #
 # Agent tiers:
-#   capable: complex reasoning, large context (query, detection, shadow, notebook, enrichment)
-#   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe)
+#   capable: complex reasoning, large context (query, detection, shadow, notebook, enrichment, hunt_sweep)
+#   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe, hunt_judge)
 #   mid:     moderate complexity (dashboard, timeline, parser_edit, shadow_narrative)
 #
 # Note: max_tokens are intentionally high — SIEM agents work with large log payloads,
