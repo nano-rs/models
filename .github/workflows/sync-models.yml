@@ -1,0 +1,146 @@
+# Daily model catalog sync.
+#
+# Asks each provider for its current model list, updates models.yaml (see
+# tools/sync/sync_models.py for the safety rules), checks the result the way
+# nano parses it, then opens a PR and merges it in the same run.
+#
+# The PR is opened with GITHUB_TOKEN, so it does not trigger validate.yml; the
+# same checks run here before the merge instead.
+#
+# Secrets (all optional; a provider whose secret is missing is skipped):
+#   ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, CLOUDFLARE_API_TOKEN
+# Variable: CLOUDFLARE_ACCOUNT_ID
+name: Sync model catalog
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: model-catalog-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Load sync state
+        run: |
+          if git fetch --depth=1 origin automation/sync-state 2>/dev/null; then
+            git show FETCH_HEAD:state.json > "$RUNNER_TEMP/state.json"
+          else
+            echo '{}' > "$RUNNER_TEMP/state.json"
+          fi
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tools/sync
+
+      - name: Query providers and update models.yaml
+        id: sync
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 tools/sync/sync_models.py \
+            --state "$RUNNER_TEMP/state.json" \
+            --summary "$RUNNER_TEMP/summary.md"
+          cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the catalog the way nano parses it
+        run: cargo run --quiet --locked --release --manifest-path tools/catalog-check/Cargo.toml -- .
+
+      - name: Open or close tracking issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILING: ${{ steps.sync.outputs.failing }}
+          NEEDS_REVIEW: ${{ steps.sync.outputs.needs_review }}
+          PROTECTED_MISSING: ${{ steps.sync.outputs.protected_missing }}
+        run: |
+          find_issue() {
+            gh issue list --state open --limit 100 --json number,title \
+              --jq ".[] | select(.title == \"$1\") | .number" | head -1
+          }
+          for p in anthropic openai gemini workers-ai; do
+            title="Model sync: $p has failed 3 or more runs in a row"
+            num=$(find_issue "$title")
+            if [[ ",$FAILING," == *",$p,"* ]]; then
+              if [ -z "$num" ]; then
+                err=$(jq -r --arg p "$p" '.providers[$p].last_error // "unknown"' "$RUNNER_TEMP/state.json")
+                gh issue create --title "$title" --body "The daily model sync could not read the $p model list. Last error: \`$err\`. Its models were left unchanged. Check the API key secret and the provider's status, then run the workflow again."
+              fi
+            elif [ -n "$num" ]; then
+              gh issue close "$num" --comment "The $p model list was read successfully again."
+            fi
+          done
+
+          title="Model sync: a default model is no longer listed by its provider"
+          num=$(find_issue "$title")
+          if [ -n "$PROTECTED_MISSING" ]; then
+            body="These models are used in agent_defaults.yaml but their provider no longer lists them. The sync will not remove them. Pick new defaults in agent_defaults.yaml, and the sync will remove the old entries on a later run: ${PROTECTED_MISSING//,/, }"
+            if [ -z "$num" ]; then gh issue create --title "$title" --body "$body"; else gh issue edit "$num" --body "$body"; fi
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "No default model is missing any more."
+          fi
+
+          title="Model sync: catalog entries need review"
+          num=$(find_issue "$title")
+          if [ -n "$NEEDS_REVIEW" ]; then
+            body="These entries were added automatically and carry a \`# needs-review:\` comment in models.yaml (usually a missing tier, sometimes a missing context window). Fill in the fields and delete the comment: ${NEEDS_REVIEW//,/, }"
+            if [ -z "$num" ]; then gh issue create --title "$title" --body "$body"; else gh issue edit "$num" --body "$body"; fi
+          elif [ -n "$num" ]; then
+            gh issue close "$num" --comment "No entries are waiting for review."
+          fi
+
+      - name: Open and merge the PR
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="automation/model-sync-$(date -u +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add models.yaml
+          git commit -q -m "chore: sync model catalog from provider APIs"
+          git push -q origin "$branch"
+          url=$(gh pr create --base main --head "$branch" \
+            --title "chore: sync model catalog ($(date -u +%F))" \
+            --body-file "$RUNNER_TEMP/summary.md")
+          gh pr merge "$url" --squash --delete-branch
+
+      - name: Save sync state
+        run: |
+          git reset -q --hard
+          if git fetch --depth=1 origin automation/sync-state 2>/dev/null; then
+            git switch -q -C state-work FETCH_HEAD
+          else
+            git switch -q --orphan state-work
+          fi
+          cp "$RUNNER_TEMP/state.json" state.json
+          git add state.json
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -q -m "chore: model sync state"
+            git push -q origin state-work:automation/sync-state
+          fi

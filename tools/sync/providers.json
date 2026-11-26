@@ -1,0 +1,36 @@
+{
+  "_comment": "Rules for tools/sync/sync_models.py. Filters only decide which NEW models get added; removals are judged against the provider's full, unfiltered list. bedrock/ entries are never touched by the sync.",
+  "removal": {
+    "confirm_runs": 2,
+    "confirm_min_hours": 20,
+    "max_fraction_per_run": 0.5
+  },
+  "failure_issue_after_runs": 3,
+  "providers": {
+    "anthropic": {
+      "auto_add": true,
+      "include": "^claude-",
+      "exclude": "(mythos|-\\d{8}$)",
+      "max_age_days": 90
+    },
+    "openai": {
+      "auto_add": true,
+      "include": "^gpt-\\d+(\\.\\d+)?(-[a-z]+)?$",
+      "exclude": "(cyber|preview|audio|realtime|search|transcribe|tts|image|codex|chat|instruct|-\\d{4}-\\d{2}-\\d{2}$)",
+      "max_age_days": 90
+    },
+    "gemini": {
+      "auto_add": true,
+      "include": "^gemini-\\d",
+      "exclude": "(preview|exp|tts|live|image|embedding|transcribe|robotics|audio|banana|omni|translate|computer-use|research|latest)",
+      "min_major_from_catalog": true
+    },
+    "workers-ai": {
+      "auto_add": false,
+      "include": "^@cf/",
+      "exclude": "(lora|guard|embedding|whisper|tts|image)",
+      "require_function_calling": true,
+      "min_context_window": 131072
+    }
+  }
+}

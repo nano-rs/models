@@ -1,0 +1,11 @@
+[package]
+name = "catalog-check"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Checks models.yaml and agent_defaults.yaml the way nano's catalog sync parses them"
+
+[dependencies]
+# Same major versions nano uses for the catalog sync (serde 1, serde_yaml 0.9).
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
