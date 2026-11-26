@@ -193,26 +193,30 @@ class SyncTest(unittest.TestCase):
         self.run_sync()
         self.assertIn("anthropic/claude-haiku-4-5", self.ids())
 
+    def test_gpt6_is_held_out(self):
+        self.lists["openai"] = OPENAI_ALL + [sm.ProviderModel("gpt-6.3-sol", created=RECENT)]
+        self.assertEqual(self.run_sync()["changed"], "false")
+
     def test_new_recent_model_is_added_with_review_flag(self):
-        self.lists["openai"] = OPENAI_ALL + [sm.ProviderModel("gpt-6.3-sol", created=RECENT),
-                                             sm.ProviderModel("gpt-6.3-cyber", created=RECENT),
+        self.lists["openai"] = OPENAI_ALL + [sm.ProviderModel("gpt-7.1-sol", created=RECENT),
+                                             sm.ProviderModel("gpt-7.1-cyber", created=RECENT),
                                              sm.ProviderModel("gpt-4.1", created=OLD),
-                                             sm.ProviderModel("gpt-6.3-sol-2026-11-01", created=RECENT)]
+                                             sm.ProviderModel("gpt-7.1-sol-2026-11-01", created=RECENT)]
         out = self.run_sync()
         text = self.read("models.yaml")
         self.assertEqual(out["changed"], "true")
-        self.assertEqual(self.ids().count("openai/gpt-6.3-sol"), 1)
-        for bad in ("gpt-6.3-cyber", "gpt-4.1", "gpt-6.3-sol-2026-11-01"):
+        self.assertEqual(self.ids().count("openai/gpt-7.1-sol"), 1)
+        for bad in ("gpt-7.1-cyber", "gpt-4.1", "gpt-7.1-sol-2026-11-01"):
             self.assertNotIn(bad, text)
-        block = text.split("openai/gpt-6.3-sol")[1].split("\n\n")[0]
-        self.assertIn("display_name: GPT-6.3 Sol", block)
+        block = text.split("openai/gpt-7.1-sol")[1].split("\n\n")[0]
+        self.assertIn("display_name: GPT-7.1 Sol", block)
         self.assertIn("context_window: 1050000", block)  # copied from the gpt-N-sol family
         self.assertIn("supports_temperature: false", block)
         self.assertNotIn("tier:", block)
         self.assertIn("# needs-review: auto-added", text)
-        self.assertEqual(out["needs_review"], "openai/gpt-6.3-sol")
+        self.assertEqual(out["needs_review"], "openai/gpt-7.1-sol")
         # New entry sits with the other openai entries, before anthropic.
-        self.assertLess(self.ids().index("openai/gpt-6.3-sol"), self.ids().index("anthropic/claude-haiku-4-5"))
+        self.assertLess(self.ids().index("openai/gpt-7.1-sol"), self.ids().index("anthropic/claude-haiku-4-5"))
 
     def test_unknown_context_is_left_empty(self):
         self.lists["anthropic"] = ANTHROPIC_ALL + [sm.ProviderModel("claude-zephyr-6", "Claude Zephyr 6", None, RECENT)]

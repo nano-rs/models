@@ -16,8 +16,9 @@
     "openai": {
       "auto_add": true,
       "include": "^gpt-\\d+(\\.\\d+)?(-[a-z]+)?$",
-      "exclude": "(cyber|preview|audio|realtime|search|transcribe|tts|image|codex|chat|instruct|-\\d{4}-\\d{2}-\\d{2}$)",
-      "max_age_days": 90
+      "exclude": "(^gpt-6|cyber|preview|audio|realtime|search|transcribe|tts|image|codex|chat|instruct|-\\d{4}-\\d{2}-\\d{2}$)",
+      "max_age_days": 90,
+      "_comment": "^gpt-6 is held out until nano supports the Responses API (GPT-6.x needs it for tool calling). Remove it from exclude then."
     },
     "gemini": {
       "auto_add": true,
