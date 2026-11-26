@@ -73,10 +73,9 @@ providers:
       max_tokens: 16384
       temperature: 0.3
 
-  # Cloudflare Workers AI (GLM-5.3), the low-cost default.
-  # capable/mid fall back to _default; fast (query, summarize, tuning, ...) uses
-  # DeepSeek V4.1 Flash because query building is latency-sensitive.
-  # (GLM-5.3 Flash was retired by Cloudflare on 2026-11-20.)
+  # Cloudflare Workers AI: GLM-5.3 for every tier. fast used GLM-5.3 Flash,
+  # which Cloudflare retired on 2026-11-20 (HTTP 410); GLM-5.3 is a bit slower
+  # and pricier for fast-tier calls, accepted as the tradeoff.
   workers-ai:
     _default:
       model_id: workers-ai/@cf/zai-org/glm-5.3
@@ -87,7 +86,7 @@ providers:
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: workers-ai/@cf/deepseek-ai/deepseek-v4.1-flash-1017
+      model_id: workers-ai/@cf/zai-org/glm-5.3
       max_tokens: 16384
       temperature: 0.3
 
