@@ -15,6 +15,12 @@
 #
 # temperature is ignored for models flagged supports_temperature: false in
 # models.yaml (nano omits it on the request).
+#
+# reasoning_effort (optional, per tier): how hard a reasoning model thinks:
+# none | minimal | low | medium | high | xhigh | max (what each model accepts
+# varies; nano sends `minimal` as `low` to GPT-6.x). nano v2.0.37+ applies it
+# to catalog-managed agents on sync; omit it to leave each agent's current
+# effort unchanged. Older builds ignore it.
 
 providers:
   anthropic:
@@ -91,10 +97,8 @@ providers:
       max_tokens: 16384
       temperature: 0.3
       # DeepSeek V4.1 Flash reasons at `high` by default (accepts none, low,
-      # high, max). `low` keeps query building fast. nano's catalog sync does
-      # not read this field yet (TierConfig has no reasoning_effort), so today
-      # it documents the intended setting and is ignored; set it per agent in
-      # Settings until nanosiem reads it.
+      # high, max). `low` keeps query building fast. Read by nano v2.0.37+;
+      # older builds ignore it.
       reasoning_effort: low
 
 # Map each agent to a tier
