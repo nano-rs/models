@@ -10,69 +10,73 @@
 #   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe)
 #   mid:     moderate complexity (dashboard, timeline, parser_edit, shadow_narrative)
 #
-# Note: max_tokens are intentionally high — SIEM agents work with large log payloads,
+# Note: max_tokens are intentionally high: SIEM agents work with large log payloads,
 # detection rule sets, and multi-event timelines that can easily fill 16-32K+ tokens.
+#
+# temperature is ignored for models flagged supports_temperature: false in
+# models.yaml (nano omits it on the request).
 
 providers:
   anthropic:
     _default:
-      model_id: anthropic/claude-sonnet-5
+      model_id: anthropic/claude-sonnet-5-5
       max_tokens: 16384
       temperature: 0.7
     capable:
-      model_id: anthropic/claude-sonnet-5
+      model_id: anthropic/claude-sonnet-5-5
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: anthropic/claude-haiku-4-5
+      model_id: anthropic/claude-haiku-5-5
       max_tokens: 16384
       temperature: 0.3
 
   google:
     _default:
-      model_id: gemini/gemini-3.1-pro-preview
+      model_id: gemini/gemini-4-neon
       max_tokens: 16384
       temperature: 0.7
     capable:
-      model_id: gemini/gemini-3.1-pro-preview
+      model_id: gemini/gemini-4-neon
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: gemini/gemini-3.5-flash-lite
+      model_id: gemini/gemini-4-hydrogen
       max_tokens: 16384
       temperature: 0.3
 
   openai:
     _default:
-      model_id: openai/gpt-5.6-sol
+      model_id: openai/gpt-6.2-sol
       max_tokens: 16384
       temperature: 0.7
     capable:
-      model_id: openai/gpt-5.6-sol
+      model_id: openai/gpt-6.2-sol
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: openai/gpt-5.6-luna
+      model_id: openai/gpt-6-luna
       max_tokens: 16384
       temperature: 0.3
 
   bedrock:
     _default:
-      model_id: bedrock/anthropic.claude-sonnet-5
+      model_id: bedrock/global.anthropic.claude-sonnet-5-5
       max_tokens: 16384
       temperature: 0.7
     capable:
-      model_id: bedrock/anthropic.claude-sonnet-5
+      model_id: bedrock/global.anthropic.claude-sonnet-5-5
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: bedrock/anthropic.claude-haiku-4-5-20251001-v1:0
+      model_id: bedrock/global.anthropic.claude-haiku-5-5
       max_tokens: 16384
       temperature: 0.3
 
-  # Cloudflare Workers AI (GLM-5.3) — low-cost default for open-tier deploys.
+  # Cloudflare Workers AI (GLM-5.3), the low-cost default.
   # capable/mid fall back to _default; fast (query, summarize, tuning, ...) uses
-  # GLM-5.3 Flash — query building is latency-sensitive.
+  # DeepSeek V4.1 Flash because query building is latency-sensitive.
+  # (GLM-5.3 Flash was retired by Cloudflare on 2026-11-20.)
   workers-ai:
     _default:
       model_id: workers-ai/@cf/zai-org/glm-5.3
@@ -83,7 +87,7 @@ providers:
       max_tokens: 32768
       temperature: 0.5
     fast:
-      model_id: workers-ai/@cf/zai-org/glm-5.3-flash
+      model_id: workers-ai/@cf/deepseek-ai/deepseek-v4.1-flash-1017
       max_tokens: 16384
       temperature: 0.3
 
