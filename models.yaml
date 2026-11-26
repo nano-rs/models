@@ -93,29 +93,37 @@ models:
     tier: economy
 
   # Google Gemini (aistudio.google.com/docs/models)
+  # Gemini 4 and Gemini 3.6+ ignore temperature/top_p/top_k today (deprecation
+  # warning header) and will reject them in a future release, so those
+  # entries omit temperature (ai.google.dev/gemini-api/docs/troubleshooting).
   - model_id: gemini/gemini-4-carbon
     display_name: Gemini 4 Carbon
     context_window: 1048576
+    supports_temperature: false
     tier: full
 
   - model_id: gemini/gemini-4-argon
     display_name: Gemini 4 Argon
     context_window: 1048576
+    supports_temperature: false
     tier: full
 
   - model_id: gemini/gemini-4-neon
     display_name: Gemini 4 Neon
     context_window: 1048576
+    supports_temperature: false
     tier: standard
 
   - model_id: gemini/gemini-4-hydrogen
     display_name: Gemini 4 Hydrogen
     context_window: 1048576
+    supports_temperature: false
     tier: economy
 
   - model_id: gemini/gemini-3.8-flash
     display_name: Gemini 3.8 Flash
     context_window: 1048576
+    supports_temperature: false
     tier: economy
 
   - model_id: gemini/gemini-3.1-pro-preview
@@ -131,6 +139,7 @@ models:
   - model_id: gemini/gemini-3.6-flash
     display_name: Gemini 3.6 Flash
     context_window: 1048576
+    supports_temperature: false
     tier: economy
 
   # OpenAI (developers.openai.com/api/docs/models)

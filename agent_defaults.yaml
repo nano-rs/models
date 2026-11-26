@@ -6,8 +6,8 @@
 # Agents not listed inherit from the "_default" key for that provider.
 #
 # Agent tiers:
-#   capable: complex reasoning, large context (query, detection, shadow, notebook, enrichment)
-#   fast:    high-throughput / low-latency (parser, summarize, tuning, validation, ai_pipe)
+#   capable: complex reasoning, large context (detection, parser, notebook, investigation, shadow hunting, enrichment, hunt investigator, hunt reviewer)
+#   fast:    high-throughput / low-latency (query, summarize, tuning, validation, ai_pipe, hunt recheck)
 #   mid:     moderate complexity (dashboard, timeline, parser_edit, shadow_narrative)
 #
 # Note: max_tokens are intentionally high: SIEM agents work with large log payloads,
@@ -90,6 +90,12 @@ providers:
       model_id: workers-ai/@cf/deepseek-ai/deepseek-v4.1-flash-1017
       max_tokens: 16384
       temperature: 0.3
+      # DeepSeek V4.1 Flash reasons at `high` by default (accepts none, low,
+      # high, max). `low` keeps query building fast. nano's catalog sync does
+      # not read this field yet (TierConfig has no reasoning_effort), so today
+      # it documents the intended setting and is ignored; set it per agent in
+      # Settings until nanosiem reads it.
+      reasoning_effort: low
 
 # Map each agent to a tier
 agents:
@@ -106,6 +112,11 @@ agents:
   investigation: capable
   shadow_hunting: capable
   shadow_narrative: mid
+  # Hunts v2 (NAN-5543), shipped since v2.0.32. nano seeds these rows as
+  # catalog-managed, so listing them here retargets them on the next sync.
+  hunt_recheck: fast
+  hunt_investigator: capable
+  hunt_reviewer: capable
   closure_summary: fast
   tuning_auto: fast
   tuning_hint: fast
