@@ -182,17 +182,13 @@ models:
 
   # Cloudflare Workers AI (developers.cloudflare.com/workers-ai/models/)
   # @cf/zai-org/glm-5.3-flash was removed: Cloudflare retired it on
-  # 2026-11-20 (HTTP 410). GLM-5.3 is the default for every Workers AI tier.
-  # GLM-5.3: 1,048,576-token context, function calling, $1.40 / $4.40 per M
-  # input / output tokens ($0.26 cached input), per
-  # developers.cloudflare.com/workers-ai/models/glm-5.3/ (checked 2026-11-25).
+  # 2026-11-20 (HTTP 410). DeepSeek V4.1 Flash is Cloudflare's recommended
+  # replacement and supports function calling.
   - model_id: workers-ai/@cf/zai-org/glm-5.3
     display_name: GLM-5.3 (Cloudflare)
     context_window: 1048576
     tier: economy
 
-  # Optional, not a default. DeepSeek V4.1 Flash: 1,048,576-token context,
-  # function calling, $0.30 / $1.20 per M input / output tokens.
   - model_id: workers-ai/@cf/deepseek-ai/deepseek-v4.1-flash-1017
     display_name: DeepSeek V4.1 Flash (Cloudflare)
     context_window: 1048576
