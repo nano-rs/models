@@ -10,6 +10,12 @@
 #   tier: Cost/access class: economy | standard | full (optional).
 #         Drives AI credit billing (economy = lite, 2 credits; standard/full =
 #         10) and plan gating. Omit only for models whose cost is unknown.
+#   api: Which OpenAI API nano calls: chat_completions | responses (optional,
+#         defaults to chat_completions). Set `responses` for models that only
+#         call tools over the Responses API (OpenAI GPT-6.x). Read by nano
+#         v2.0.37 and later; older builds ignore it and use Chat Completions.
+#   supports_function_calling: false for a model that cannot call tools
+#         (optional). Omit to keep the current setting (true for a new model).
 #
 # Removing a model from this file marks it deprecated on the next sync (it is
 # never deleted). Only remove a model once its provider has retired it or the
@@ -142,9 +148,42 @@ models:
     tier: economy
 
   # OpenAI (developers.openai.com/api/docs/models)
-  # GPT-6.x (6.2 Astra/Sol, 6.1 Terra, 6 Luna) is held out: those models need
-  # the Responses API for tool calling, which nano does not support yet.
-  # They come back once it does.
+  # GPT-6.x calls tools only over the Responses API (GPT-6 Luna allows it over
+  # Chat Completions only with reasoning effort `none`), so these set
+  # `api: responses`. nano v2.0.37+ sends them to Cloudflare AI Gateway's
+  # /openai/responses route. All four share a 1,050,000 context window and
+  # 128K max output and reject `temperature`. Astra and Sol reject reasoning
+  # effort `none`; Terra and Luna accept none/low/medium/high/xhigh/max.
+  # Tiers follow price per 1M input tokens: Astra $8 (full), Sol $2 and
+  # Terra $1 (standard), Luna $0.10 (economy).
+  - model_id: openai/gpt-6.2-astra
+    display_name: GPT-6.2 Astra
+    context_window: 1050000
+    supports_temperature: false
+    api: responses
+    tier: full
+
+  - model_id: openai/gpt-6.2-sol
+    display_name: GPT-6.2 Sol
+    context_window: 1050000
+    supports_temperature: false
+    api: responses
+    tier: standard
+
+  - model_id: openai/gpt-6.1-terra
+    display_name: GPT-6.1 Terra
+    context_window: 1050000
+    supports_temperature: false
+    api: responses
+    tier: standard
+
+  - model_id: openai/gpt-6-luna
+    display_name: GPT-6 Luna
+    context_window: 1050000
+    supports_temperature: false
+    api: responses
+    tier: economy
+
   #
   # GPT-5.6 shares a 1,050,000 context window and 128K max output; reasoning
   # models, so `temperature` is omitted.
